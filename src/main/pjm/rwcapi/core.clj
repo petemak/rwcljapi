@@ -1,50 +1,46 @@
 (ns pjm.rwcapi.core
   (:require [pjm.rwcapi.config :as cfg]
-            [io.pedestal.http :as http]
-            [io.pedestal.http.route :as route]))
+            [com.stuartsierra.component :as component]
+            [pjm.rwcapi.components.sample-component :as sample-comp]
+            [pjm.rwcapi.components.pedestal-component :as pedestal-comp]))
+
+
 
 
 ;; ---------------------------------------------
-;; Hello world handler
+;; Component system
+;;
+;; sample-component <- pedestal-component
 ;; ---------------------------------------------
-(defn respond-hello
-  "Respons with Hello world!"
-  [request]          
-  {:status 200
-   :body "Hello, world!"})
-
-
-;; ---------------------------------------------
-;; In Pestal routing is the process
-;; of matching an incoming request
-;; to a handler or chain of handlers.
-;; ---------------------------------------------
-(def routes
-  (route/expand-routes                                   
-   #{["/greet" :get respond-hello :route-name :greet]}))
-
+(defn rwcapi-system
+  "Creates a system map from the specified configuration
+   ready for starting and returns it"
+  [cfg]
+  (component/system-map
+   :sample-component (sample-comp/new-sample-component cfg)
+   :pedestal-component (component/using (pedestal-comp/new-pedestal-component cfg)
+                                        [:sample-component])))
 
 ;; ---------------------------------------------
-;; The sevrer or service definition
+;; Stopping the system when the app shuts down
 ;; ---------------------------------------------
-(defn create-server
-  "Creates a service map ready to be started
-   with io.pedestal.http/start"
-  [port]
-  (http/create-server     
-   {::http/routes routes  
-    ::http/type   :jetty  
-    ::http/port   port})) 
-
+(defn add-shutdown-hook
+  "Add shutdown hook to stop specified system"
+  [system]
+  (.addShutdownHook
+   (Runtime/getRuntime)
+   (new Thread #(component/stop-system system))))
 
 ;; ---------------------------------------------
 ;; Main entry function
 ;; ---------------------------------------------
 (defn main
   [args]
-  (let [cfg     (cfg/read-appconfig)
-        port    (-> cfg :webserver :port)
-        svc-map (create-server 8890)]
+  (println "Starting RWCAPI services with config: " (cfg/read-appconfig) "....")  
+  (let [system (-> (cfg/read-appconfig)
+                   (rwcapi-system)
+                   (component/start-system))]
 
-    (println "Staring application with configuration:" cfg)
-    (http/start svc-map)))
+    (println "Started RWCAPI services with system map: " system)
+
+    (add-shutdown-hook system)))
