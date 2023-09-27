@@ -1,9 +1,13 @@
 # How to build a backend
-List of Lojures libraries 
+The Cojure way of building applicatiobs is composing them using libraries. These libraries focus on a specific aspect of the application layers (or cross cuttig concerns) and do it well. There are libraries for handling HTTP, request routing, configuration etc. 
+
+Established list of clojures libraries:
 [https://github.com/razum2um/awesome-clojure](https://github.com/razum2um/awesome-clojure)
 [https://www.clojure-toolbox.com/](https://www.clojure-toolbox.com/)
 
-## Project management
+## Libraries
+
+### Project management
 
 deps.edn ✅
 
@@ -12,7 +16,7 @@ deps.edn ✅
 Real world applications have a bunch of services HTTP Server, caches, stream listeners, database connections etc.
 
 - Mount - bad global state
-- Component
+- Component ✅
 - Integrant
 - System
 
@@ -38,21 +42,45 @@ Configure a system using properties
 - Reitit ✅
 - Ring ✅
     - **ring-jetty9-adapter (rj9a)**
+- Pedestal  ✅
+  Best used with Componnt: http://pedestal.io/guides/pedestal-with-component
+  Interceptor concept: http://pedestal.io/guides/what-is-an-interceptor
 
 ### Schema
 
-- Mali
+- Mali ✅
 - Clojure Spec
 - Schema - classic library
 
-### Routing Client
-
-- clj-http
 
 ### Database
-- Datomic
+- Datomic ✅
 - XTDB
 
 ### SQL Database
 - Honey-Sql
 - Hug-Sql
+
+## Testing ##
+
+### HTTP Client
+- clj-http 
+  https://github.com/dakrone/clj-httpcl
+
+## Testing
+
+### Test frameworks ###
+- clojure.test
+  https://clojure.github.io/clojure/clojure.test-api.html
+
+### Tet Runner ###
+- cognitect-labs test-runner
+  https://github.com/cognitect-labs/test-runner
+  https://clojure.org/guides/deps_and_cli#test_runner
+
+### Cider running tests
+https://github.com/dakrone/clj-http
+CIDER provides a minor-mode that automatically runs all tests for a namespace whenever you load a file (with C-c C-k).
+- togal using _M-x cider-auto-test-mode_, or_(cider-auto-test-mode 1)_
+- naming convention _-test_
+https://docs.cider.mx/cider/testing/running_tests.html

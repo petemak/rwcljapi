@@ -2,10 +2,8 @@
   (:require [pjm.rwcapi.config :as cfg]
             [com.stuartsierra.component :as component]
             [pjm.rwcapi.components.sample-component :as sample-comp]
-            [pjm.rwcapi.components.pedestal-component :as pedestal-comp]))
-
-
-
+            [pjm.rwcapi.components.pedestal-component :as pedestal-comp]
+            [pjm.rwcapi.components.in-memory-db-component :as in-mem-db-comp]))
 
 ;; ---------------------------------------------
 ;; Component system
@@ -18,8 +16,9 @@
   [cfg]
   (component/system-map
    :sample-component (sample-comp/new-sample-component cfg)
+   :in-memory-db-component (in-mem-db-comp/new-in-memory-db-component cfg)   
    :pedestal-component (component/using (pedestal-comp/new-pedestal-component cfg)
-                                        [:sample-component])))
+                                        [:sample-component :in-memory-db-component])))
 
 ;; ---------------------------------------------
 ;; Stopping the system when the app shuts down
@@ -40,7 +39,5 @@
   (let [system (-> (cfg/read-appconfig)
                    (rwcapi-system)
                    (component/start-system))]
-
-    (println "Started RWCAPI services with system map: " system)
 
     (add-shutdown-hook system)))
