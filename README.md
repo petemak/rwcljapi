@@ -81,6 +81,9 @@ Configure a system using properties
 ### Cider running tests
 https://github.com/dakrone/clj-http
 CIDER provides a minor-mode that automatically runs all tests for a namespace whenever you load a file (with C-c C-k).
-- togal using _M-x cider-auto-test-mode_, or_(cider-auto-test-mode 1)_
-- naming convention _-test_
-https://docs.cider.mx/cider/testing/running_tests.html
+- Togal using _M-x cider-auto-test-mode_, or_(cider-auto-test-mode 1)_
+- Naming convention: _-test_
+
+Further reading:
+- https://docs.cider.mx/cider/testing/running_tests.html
+- https://tbellisiv.gitbooks.io/clojure-emacs-cider-intro/content/Cider_Tour/Interactive_Coding/Tests.html

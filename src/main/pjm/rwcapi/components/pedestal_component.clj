@@ -5,6 +5,9 @@
             [io.pedestal.interceptor :as interceptor]))
 
 
+
+
+
 ;; -------------------------------------------------------
 ;; Utility fuctions
 ;; -------------------------------------------------------
@@ -41,7 +44,9 @@
 
 
 ;; ---------------------------------------------
-;; TO DO handler
+;; TO DO handler.Returns a lambda that reads the
+;; ID of a TODO from the request path-params and
+;; calls get-todo-ny id()
 ;; ---------------------------------------------
 (def get-todo-handler
   {:name :get-todo-handler
@@ -82,6 +87,13 @@
   (route/expand-routes                                   
    #{["/greet"         :get hello-handler    :route-name :greet]
      ["/todo/:todo-id" :get get-todo-handler :route-name :get-todo]}))
+
+;; -------------------------------------------------------
+;; Utility function for generating routes URLS from route names. The returned
+;; function takes a route and returns a URL
+;; -------------------------------------------------------
+(def url-for
+  (route/url-for-routes routes))
 
 
 

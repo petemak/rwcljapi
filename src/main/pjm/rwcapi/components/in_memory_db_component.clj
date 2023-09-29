@@ -9,7 +9,7 @@
              :name "Buy milk"
              :status :created}]}
    {:id (random-uuid)
-    :name "My other TODO list"
+    :name "My empty TODO list"
     :items []}   ]
   )
 
