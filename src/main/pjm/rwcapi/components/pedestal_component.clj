@@ -5,7 +5,29 @@
             [io.pedestal.interceptor :as interceptor]
             [io.pedestal.http.body-params :as body-params]
             [io.pedestal.http.content-negotiation :as content-ngotiation]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [schema.core :as s]))
+
+; -------------------------------------------------------
+;; Chema deinitiions
+;; -------------------------------------------------------
+
+(s/defschema
+  TodoItem
+  "A schema for a TODO item"
+  {:id s/Str
+   :name s/Str
+   :status s/Str
+   :description s/Str})
+
+
+(s/defschema
+  Todo
+  "A schema for a TODO"
+  {:id s/Str
+   :name s/Str
+   :items [TodoItem]})
+
 
 
 ;; --------------------------------------------- [cheshire.core :refer :all]
@@ -21,14 +43,14 @@
 ;; -------------------------------------------------------
 (defn response 
   "Retunrs a basic response map contructed from the
-  specified body and status"
+  specified body and status. The bod contents are encoded as JSON"
   ([status]
    (response status nil))
   ([status body]
    (merge 
     {:status status
      :headers {"Content-Type" "application/json"}}
-    (when body {:body body}))))
+    (when body {:body (json/encode body)}))))
 
 (def ok        (partial response 200))
 (def created   (partial response 201))
@@ -64,7 +86,7 @@
   {:name ::echo                                                                   
    :enter (fn [context]                                                           
             (let [request (:request context)                                      
-                  response (ok request)]                                          
+                  response (ok)]                                          
               (assoc context :response response)))})
 
 ;; ---------------------------------------------
@@ -87,6 +109,7 @@
 ;; TO DO GET handler.Returns a lambda that reads the
 ;; ID of a TODO from the request path-params and
 ;; calls get-todo-ny id()
+
 ;; ---------------------------------------------
 (def get-todo-interceptor
   {:name :get-todo-interceptor
@@ -98,7 +121,7 @@
                                        :path-params
                                        :todo-id))
            response (if todo
-                      (ok (json/encode todo))
+                      (ok todo)
                       (not-found))]
        (assoc context :response response)))})
 
@@ -123,15 +146,17 @@
    :enter
    (fn [{:keys [dependencies] :as context}]
      (let [request (:request context)
-           todo    (:json-params request) ]
+           todo    (s/validate Todo (:json-params request)) ]
        (save-todo! dependencies todo)
-       (assoc context :response (created (json/encode todo)))))})
+       (assoc context :response (created todo))))})
 
 
 ;; ---------------------------------------------
 ;; In Pestal routing is the process
 ;; of matching an incoming request
 ;; to a handler or chain of handlers.
+;; Note: body-params interceptor is 
+;; used to read body parameters into :json-params 
 ;; ---------------------------------------------
 (def routes
   (route/expand-routes                                   
