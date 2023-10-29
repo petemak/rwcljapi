@@ -54,7 +54,7 @@
 (deftest basic-test
     
   (testing "Correct generation of URLs for greet API from route names"
-    (is (= "/greet" (url-for :greet))))
+    (is (= "/echo" (url-for :echo))))
 
   (testing "Correct generation of URLs for TODO API by ID"
     (let [todo-id (random-uuid)]
@@ -69,10 +69,15 @@
   
   (testing "sut->url should return a correct URL"
     (let [port (get-free-port)]
-      (with-system  [sut (core/rwcapi-system {:webserver {:port port}})]
-        (is (= (str "http://localhost:" port "/greet")
+      (with-system  [sut (core/start-rwcapi-system {:webserver {:port port}
+                                                    :db-spec  {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                               :dbtype   "postgres"
+                                                               :dbname   "rwcapi"
+                                                               :username "rwcapi"
+                                                               :pasword  "rwcapi"}})]
+        (is (= (str "http://localhost:" port "/echo")
                (sut->url sut
-                         (url-for :greet))))))))
+                         (url-for :echo))))))))
 
 
 
@@ -82,41 +87,60 @@
 ;; -------------------------------------------------------
 (deftest content-negotiation-test
   (testing "Content-negotiation that application/edn is not accepted and returns with status 406"
-    (with-system [sut (core/rwcapi-system {:webserver {:port (get-free-port)}})]
+    (with-system [sut (core/start-rwcapi-system {:webserver {:port (get-free-port)}
+                                                 :db-spec   {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                             :dbtype   "postgres"
+                                                             :dbname   "rwcapi"
+                                                             :username "rwcapi"
+                                                             :pasword  "rwcapi"}})]
       (is (= {:body "Not Acceptable"
               :status 406}
              (-> (sut->url sut
-                           (url-for :greet))
+                           (url-for :echo))
                  (client/get {:accept :edn
                               :throw-exceptions false})
                  (select-keys [:body :status]))))))
   
   (testing "Content-negotiong that application/html is not accepted and returns with status 406"
-    (with-system [sut (core/rwcapi-system {:webserver {:port (get-free-port)}})]
+    (with-system [sut (core/start-rwcapi-system {:webserver {:port (get-free-port)}
+                                                 :db-spec   {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                                        :dbtype   "postgres"
+                                                                        :dbname   "rwcapi"
+                                                                        :username "rwcapi"
+                                                                        :pasword  "rwcapi"}})]
       (is (= {:body "Not Acceptable"
               :status 406}
              (-> (sut->url sut
-                           (url-for :greet))
+                           (url-for :echo))
                  (client/get {:accept :html
                               :throw-exceptions false})
                  (select-keys [:body :status]))))))
 
   
   (testing "Content-negotiation that only application/json returns status 200"
-    (with-system [sut (core/rwcapi-system {:webserver {:port (get-free-port)}})]
-      (is (= {:body "Hello service - Pedestal component"
-              :status 200}
+    (with-system [sut (core/start-rwcapi-system {:webserver {:port (get-free-port)}
+                                                 :db-spec   {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                             :dbtype   "postgres"
+                                                             :dbname   "rwcapi"
+                                                             :username "rwcapi"
+                                                             :pasword  "rwcapi"}})]
+      (is (= {:status 200}
              (-> (sut->url sut
-                           (url-for :greet))
+                           (url-for :echo))
                  (client/get {:accept :json})
-                 (select-keys [:body :status])))))))
+                 (select-keys [:status])))))))
 
 ;; -------------------------------------------------------
 ;; Test the echo endpoint
 ;; -------------------------------------------------------
 (deftest echo-test
   (testing "Echo enpoint must return the request in the body"
-    (with-system [sut (core/rwcapi-system {:webserver {:port (get-free-port)}})]
+    (with-system [sut (core/start-rwcapi-system {:webserver {:port (get-free-port)}
+                                                 :db-spec   {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                             :dbtype   "postgres"
+                                                             :dbname   "rwcapi"
+                                                             :username "rwcapi"
+                                                             :pasword  "rwcapi"}})]
       (is (= {#_:body
               :status 200}
              (-> (sut->url sut
@@ -127,16 +151,24 @@
 ;; -------------------------------------------------------
 ;; Test the greet service
 ;; -------------------------------------------------------
-(deftest greeting-test
-  (testing "Greeting API must respond with a message"
-    (with-system [sut (core/rwcapi-system {:webserver {:port (get-free-port)}})]
-      (is (= {:body "Hello service - Pedestal component"
-              :status 200}
-             (-> (sut->url sut
-                           (url-for :greet))
-                 (client/get {:accept :json
-                              :throw-exceptions false})
-                 (select-keys [:body :status])))))))
+(comment
+
+  
+  (deftest greeting-test
+    (testing "Greeting API must respond with a message"
+      (with-system [sut (core/start-rwcapi-system {:webserver {:port (get-free-port)}
+                                                   :db-spec   {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                               :dbtype   "postgres"
+                                                               :dbname   "rwcapi"
+                                                               :username "rwcapi"
+                                                               :pasword  "rwcapi"}})]
+        (is (= {
+                :status 200}
+               (-> (sut->url sut
+                             (url-for :echo))
+                   (client/get {:accept :json
+                                :throw-exceptions false})
+                   (select-keys [:status]))))))))
 
 
 ;; -------------------------------------------------------
@@ -150,7 +182,12 @@
                         :name "Buy mil"}]}
         port (get-free-port)]
     
-    (with-system [sut (core/rwcapi-system {:webserver {:port port}})] 
+    (with-system [sut (core/start-rwcapi-system {:webserver {:port port}
+                                                 :db-spec   {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                             :dbtype   "postgres"
+                                                             :dbname   "rwcapi"
+                                                             :username "rwcapi"
+                                                             :pasword  "rwcapi"}})] 
       (reset! (-> sut :in-memory-db-component :state-atom)
               [todo1])
 
@@ -187,7 +224,12 @@
                         :description "From Migros, get the Zuri brand"}]}
         port (get-free-port)]
     
-    (with-system [sut (core/rwcapi-system {:webserver {:port port}})] 
+    (with-system [sut (core/start-rwcapi-system {:webserver {:port port}
+                                                 :db-spec  {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                            :dbtype   "postgres"
+                                                            :dbname   "rwcapi"
+                                                            :username "rwcapi"
+                                                            :pasword  "rwcapi"}})] 
      
       (testing "A valid TODO posted for saving must be returned"
         (is (= {:body todo

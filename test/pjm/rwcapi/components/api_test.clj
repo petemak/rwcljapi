@@ -1,12 +1,11 @@
 (ns pjm.rwcapi.components.api-test
   (:require [clojure.test :refer :all]
             [pjm.rwcapi.core :as core]
-            [clj-http.client :as client]
+           ;; [clj-http.client :as client]
             [com.stuartsierra.component :as component]
             [pjm.rwcapi.components.pedestal-component :refer [url-for]]
             [clojure.string :as str]
-            [cheshire.core :as json]
-            ))
+            [cheshire.core :as json]))
 
 
 
@@ -57,9 +56,12 @@
   
   (testing "sut->url should return a correct URL"
     (let [port (get-free-port)]
-      (with-system  [sut (core/rwcapi-system {:webserver {:port port}})]
-        (is (= (str "http://localhost:" port "/greet")
+      (with-system  [sut (core/start-rwcapi-system {:webserver {:port port}
+                                                    :db-spec    {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                                 :dbtype   "postgres"
+                                                                 :dbname   "rwcapi"
+                                                                 :username "rwcapi"
+                                                                 :pasword  "rwcapi"}})]
+        (is (= (str "http://localhost:" port "/echo")
                (sut->url sut
-                         (url-for :greet))))))))
-
-
+                         (url-for :echo))))))))

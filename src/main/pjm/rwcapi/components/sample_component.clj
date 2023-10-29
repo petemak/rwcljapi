@@ -6,11 +6,11 @@
   comp/Lifecycle
 
   (start [component]
-    (println "::=> SampleComponent - start: -[" component "]-")
+    (println "::=> SampleComponent - start component ...")
     (assoc component :state ::started))
 
   (stop [component]
-    (println ":: => SampleComponent - stop: -[" component "]-")
+    (println ":: => SampleComponent - stop component")
     (assoc component :state nil)))
 
 

@@ -19,11 +19,11 @@
   comp/Lifecycle
 
   (start [component]
-    (println "::=> InMemoryDBComponent - start: -[" component "]-")
+    (println "::=> InMemoryDBComponent - start component...")
     (assoc component :state-atom (atom [])))
 
   (stop [component]
-    (println ":: => InMemoryDBComponent - stop: -[" component "]-")
+    (println ":: => InMemoryDBComponent - stop component")
     (assoc component :state-atom nil)))
 
 

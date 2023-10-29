@@ -6,7 +6,8 @@
             [io.pedestal.http.body-params :as body-params]
             [io.pedestal.http.content-negotiation :as content-ngotiation]
             [cheshire.core :as json]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [next.jdbc :as jdbc]))
 
 ; -------------------------------------------------------
 ;; Chema deinitiions
@@ -104,6 +105,23 @@
              (assoc context :dependencies dependencies))}))
 
 
+;; ---------------------------------------------
+;; TO DO GET handler.Returns a lambda that reads the
+;; ID of a TODO from the request path-params and
+;; calls get-todo-ny id()
+
+;; ---------------------------------------------
+(def get-info-interceptor
+  {:name :get-info-interceptor
+   :enter
+   (fn [{:keys [dependencies] :as context}]
+     (let [{:keys [data-source]} dependencies
+           db-reponse (first (jdbc/execute! (data-source)
+                                            ["SHOW SERVER_VERSION"]))]
+       (clojure.pprint/pprint ":: => " db-reponse)
+       
+       (assoc context :response (ok "DB server version"))))})
+
 
 ;; ---------------------------------------------
 ;; TO DO GET handler.Returns a lambda that reads the
@@ -132,7 +150,6 @@
 (defn save-todo!
   "Saves a TODO with specified ID"
   [{:keys [in-memory-db-component]} todo]
-  (println "::-> save-todo!:-[" todo "]-")
   (swap! (:state-atom in-memory-db-component) conj todo))
 
 
@@ -161,7 +178,7 @@
 (def routes
   (route/expand-routes                                   
    #{["/echo"          :get  echo-intereptor       :route-name :echo]
-     ["/greet"         :get  hello-handler         :route-name :greet]
+     ["/info"          :get  get-info-interceptor  :route-name :info]
      ["/todo/:todo-id" :get  get-todo-interceptor  :route-name :get-todo]
      ["/todo"          :post [(body-params/body-params) post-todo-interceptor] :route-name :post-todo]}))
 
@@ -178,7 +195,7 @@
 ;; sample compoent as a dependency
 ;; -------------------------------------------------
 (defrecord PedestalComponent
-    [config example-component in-memory-db-component]
+    [config example-component data-source in-memory-db-component]
   
   ;; Implement the Lifecycle protocol
   comp/Lifecycle
@@ -186,7 +203,7 @@
   ;; Creates a pedestal service ma p and starts it
   ;; with io.pedestal.http/start
   (start [component]
-    (println "::=> PedestalComponent - start - " component)
+    (println "::=> PedestalComponent - start component on port " (-> config :webserver :port) " ...")
     (let [server (-> {::http/routes routes  
                       ::http/type   :jetty
                       ::http/join?  false
@@ -200,7 +217,7 @@
       (assoc component :server server)))
 
   (stop [component]
-    (println ":: => PedestalComponent -  stop: component" )
+    (println ":: => PedestalComponent -  stop component" )
     (when-let [server (:server component)]
       (http/stop server))
     (assoc component :server nil)))

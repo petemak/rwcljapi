@@ -1,0 +1,18 @@
+version: '3.9'
+services:
+  database:
+    container_name: postgres_container
+    image: postgres:15.4
+    ports:
+      - 5432:5432
+    networks:
+      - postgres-db-network
+    restart: always
+    environment:
+      - POSTGRES_DB=rwcapi
+      - POSTGRES_USER=rwcapi
+      - POSTGRES_PASSWORD=rwcapi
+      - POSTGRES_INITDB_ARGS='--encoding=UTF-8'    
+networks:
+    postgres-db-network:
+        driver: bridge
