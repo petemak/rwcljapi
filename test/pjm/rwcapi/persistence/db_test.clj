@@ -28,8 +28,8 @@
                                                :host     (:host postgres)
                                                :port     (get (:mapped-ports postgres) 5432)})]
 
-          (is (= "localhost" (:host postgres)))
 
+          (is (= "localhost" (:host postgres)))
           (is (= [{:server_version "15.4 (Debian 15.4-2.pgdg120+1)"}]
                  (jdbc/execute! datasource ["SHOW server_version;"])))
           

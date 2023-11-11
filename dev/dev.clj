@@ -21,7 +21,7 @@
                                            :dbtype   "postgres"
                                            :dbname   "rwcapi"
                                            :username "rwcapi"
-                                           :pasword  "rwcapi"}})))
+                                           :password  "rwcapi"}})))
 
 
 ;; ----------------------------------------------------------

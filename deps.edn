@@ -9,16 +9,17 @@
         cheshire/cheshire            {:mvn/version "5.12.0"}
 
         ;;Testcomtntainers
-        ;;  org.testcontainers/postgresql     {:mvn/version "1.18.0"}
-        ;; org.testcontainers/testcontainers {:mvn/version "1.18.0"}
         clj-test-containers/clj-test-containers {:mvn/version "0.7.4"}
         
         ;; Relational DB
         com.github.seancorfield/next.jdbc {:mvn/version "1.3.894"}
         org.postgresql/postgresql         {:mvn/version "42.6.0"}
 
-        ;;
-        com.zaxxer/HikariCP               {:mvn/version "5.0.1"}}
+        ;; Connection pools
+        com.zaxxer/HikariCP               {:mvn/version "5.0.1"}
+
+        ;; Migrations
+        org.flywaydb/flyway-core           {:mvn/version "9.22.3"}}
  
  :aliases {:dev {:extra-paths ["dev"]
                  :extra-deps {clj-http/clj-http {:mvn/version "3.12.3"}

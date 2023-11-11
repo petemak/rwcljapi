@@ -116,11 +116,10 @@
    :enter
    (fn [{:keys [dependencies] :as context}]
      (let [{:keys [data-source]} dependencies
-           db-reponse (first (jdbc/execute! (data-source)
+           db-response (first (jdbc/execute! (data-source)
                                             ["SHOW SERVER_VERSION"]))]
-       (clojure.pprint/pprint ":: => " db-reponse)
-       
-       (assoc context :response (ok "DB server version"))))})
+             
+       (assoc context :response (ok (:server_version db-response)))))})
 
 
 ;; ---------------------------------------------
@@ -150,7 +149,7 @@
 (defn save-todo!
   "Saves a TODO with specified ID"
   [{:keys [in-memory-db-component]} todo]
-  (swap! (:state-atom in-memory-db-component) conj todo))
+  (Swap! (:state-atom in-memory-db-component) conj todo))
 
 
 ;; ---------------------------------------------

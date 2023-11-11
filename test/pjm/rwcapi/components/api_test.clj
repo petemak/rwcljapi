@@ -1,7 +1,7 @@
 (ns pjm.rwcapi.components.api-test
   (:require [clojure.test :refer :all]
             [pjm.rwcapi.core :as core]
-           ;; [clj-http.client :as client]
+            [clj-http.client :as client]
             [com.stuartsierra.component :as component]
             [pjm.rwcapi.components.pedestal-component :refer [url-for]]
             [clojure.string :as str]
@@ -65,3 +65,23 @@
         (is (= (str "http://localhost:" port "/echo")
                (sut->url sut
                          (url-for :echo))))))))
+
+
+;; -------------------------------------------------------
+;; Test the info endpoint
+;; -------------------------------------------------------
+(deftest info-test
+  (testing "Info endpoint must return the request in the body"
+    (with-system [sut (core/start-rwcapi-system {:webserver {:port (get-free-port)}
+                                                 :db-spec   {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                             :dbtype   "postgres"
+                                                             :dbname   "rwcapi"
+                                                             :username "rwcapi"
+                                                             :password  "rwcapi"}})]
+      (is (= {:body "\"15.4 (Debian 15.4-2.pgdg120+1)\""
+              :status 200}
+             (-> (sut->url sut
+                           (url-for :info))
+                 (client/get {:accept :json
+                              :throw-exceptions false})
+                 (select-keys [:body :status])))))))

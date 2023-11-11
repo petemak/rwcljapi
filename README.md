@@ -60,6 +60,14 @@ Configure a system using properties
 ### SQL Database
 - Honey-Sql
 - Hug-Sql
+- Postgres
+
+#### Connection pools
+- Zaxxer HikariCP
+
+#### Migrations 
+- Redgate Flyway
+  https://github.com/flyway/flyway
 
 ## Testing ##
 
@@ -77,6 +85,10 @@ Configure a system using properties
 - cognitect-labs test-runner
   https://github.com/cognitect-labs/test-runner
   https://clojure.org/guides/deps_and_cli#test_runner
+  
+### Test Containers ###
+- clj-test-containers -  lightweight wrapper around the Testcontainers Java library.
+  https://github.com/testcontainers/testcontainers-clj#clj-test-containers
 
 ### Cider running tests
 https://github.com/dakrone/clj-http
@@ -87,3 +99,36 @@ CIDER provides a minor-mode that automatically runs all tests for a namespace wh
 Further reading:
 - https://docs.cider.mx/cider/testing/running_tests.html
 - https://tbellisiv.gitbooks.io/clojure-emacs-cider-intro/content/Cider_Tour/Interactive_Coding/Tests.html
+
+## On Java
+Some libraries might require JDK 17 as a minimum.
+
+### Check available JDKs ###
+- Update Arch
+  ```
+$ pacman -Syyu
+  ```
+- List available 17 packages
+```
+$ pacman -Ss openjdk | grep 17
+```
+- Install JDK, docs and source
+```
+$ sudo pacman -S jdk17-openjdk openjdk17-doc openjdk17-src
+```
+- to check default version, usie archlinux-jaja
+```
+$ archlinux-java status
+```
+- set 17 as default
+```
+$ sudo archlinux-java set java-17-openjdk
+```
+
+- Check status
+```
+$ archlinux-java status
+Available Java environments:
+  java-11-openjdk
+  java-17-openjdk (default)
+```

@@ -74,7 +74,7 @@
                                                                :dbtype   "postgres"
                                                                :dbname   "rwcapi"
                                                                :username "rwcapi"
-                                                               :pasword  "rwcapi"}})]
+                                                               :password  "rwcapi"}})]
         (is (= (str "http://localhost:" port "/echo")
                (sut->url sut
                          (url-for :echo))))))))
@@ -92,7 +92,7 @@
                                                              :dbtype   "postgres"
                                                              :dbname   "rwcapi"
                                                              :username "rwcapi"
-                                                             :pasword  "rwcapi"}})]
+                                                             :password  "rwcapi"}})]
       (is (= {:body "Not Acceptable"
               :status 406}
              (-> (sut->url sut
@@ -107,7 +107,7 @@
                                                                         :dbtype   "postgres"
                                                                         :dbname   "rwcapi"
                                                                         :username "rwcapi"
-                                                                        :pasword  "rwcapi"}})]
+                                                                        :password  "rwcapi"}})]
       (is (= {:body "Not Acceptable"
               :status 406}
              (-> (sut->url sut
@@ -123,7 +123,7 @@
                                                              :dbtype   "postgres"
                                                              :dbname   "rwcapi"
                                                              :username "rwcapi"
-                                                             :pasword  "rwcapi"}})]
+                                                             :password  "rwcapi"}})]
       (is (= {:status 200}
              (-> (sut->url sut
                            (url-for :echo))
@@ -134,19 +134,41 @@
 ;; Test the echo endpoint
 ;; -------------------------------------------------------
 (deftest echo-test
-  (testing "Echo enpoint must return the request in the body"
+  (testing "Info endpoint must return service information"
     (with-system [sut (core/start-rwcapi-system {:webserver {:port (get-free-port)}
                                                  :db-spec   {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
                                                              :dbtype   "postgres"
                                                              :dbname   "rwcapi"
                                                              :username "rwcapi"
-                                                             :pasword  "rwcapi"}})]
+                                                             :password  "rwcapi"}})]
       (is (= {#_:body
               :status 200}
              (-> (sut->url sut
                            (url-for :echo))
                  (client/get)
                  (select-keys [#_:body :status])))))))
+
+
+
+;; -------------------------------------------------------
+;; Test the echo endpoint
+;; -------------------------------------------------------
+(deftest info-test
+  (testing "Echo enpoint must return the request in the body"
+    (with-system [sut (core/start-rwcapi-system {:webserver {:port (get-free-port)}
+                                                 :db-spec   {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                             :dbtype   "postgres"
+                                                             :dbname   "rwcapi"
+                                                             :username "rwcapi"
+                                                             :password  "rwcapi"}})]
+      (is (= {:body "\"15.4 (Debian 15.4-2.pgdg120+1)\""
+              :status 200}
+             (-> (sut->url sut
+                           (url-for :info))
+                 (client/get {:accept :json
+                              :throw-exceptions false})
+                 (select-keys [:body :status])))))))
+
 
 ;; -------------------------------------------------------
 ;; Test the greet service
@@ -161,7 +183,7 @@
                                                                :dbtype   "postgres"
                                                                :dbname   "rwcapi"
                                                                :username "rwcapi"
-                                                               :pasword  "rwcapi"}})]
+                                                               :password  "rwcapi"}})]
         (is (= {
                 :status 200}
                (-> (sut->url sut
@@ -187,7 +209,7 @@
                                                              :dbtype   "postgres"
                                                              :dbname   "rwcapi"
                                                              :username "rwcapi"
-                                                             :pasword  "rwcapi"}})] 
+                                                             :password  "rwcapi"}})] 
       (reset! (-> sut :in-memory-db-component :state-atom)
               [todo1])
 
@@ -229,7 +251,7 @@
                                                             :dbtype   "postgres"
                                                             :dbname   "rwcapi"
                                                             :username "rwcapi"
-                                                            :pasword  "rwcapi"}})] 
+                                                            :password  "rwcapi"}})] 
      
       (testing "A valid TODO posted for saving must be returned"
         (is (= {:body todo
