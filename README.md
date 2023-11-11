@@ -104,28 +104,34 @@ Further reading:
 Some libraries might require JDK 17 as a minimum.
 
 ### Check available JDKs ###
-- Update Arch
-  ```
+Updating Arch
+  
+```
 $ pacman -Syyu
-  ```
-- List available 17 packages
+```
+Listing available 17 packages
+
 ```
 $ pacman -Ss openjdk | grep 17
 ```
-- Install JDK, docs and source
+Install JDK, docs and source
+
 ```
 $ sudo pacman -S jdk17-openjdk openjdk17-doc openjdk17-src
 ```
-- to check default version, usie archlinux-jaja
+To check default version, usie archlinux-jaja
+
 ```
 $ archlinux-java status
 ```
-- set 17 as default
+Set 17 as default
+
 ```
 $ sudo archlinux-java set java-17-openjdk
 ```
 
-- Check status
+Check status
+
 ```
 $ archlinux-java status
 Available Java environments:
