@@ -114,12 +114,16 @@ Listing available 17 packages
 ```
 $ pacman -Ss openjdk | grep 17
 ```
+
+
+### Installing a JDK ###
 Install JDK, docs and source
 
 ```
 $ sudo pacman -S jdk17-openjdk openjdk17-doc openjdk17-src
 ```
-To check default version, usie archlinux-jaja
+
+To check default version, use archlinux-java
 
 ```
 $ archlinux-java status
