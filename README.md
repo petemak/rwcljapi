@@ -101,7 +101,7 @@ Further reading:
 - https://tbellisiv.gitbooks.io/clojure-emacs-cider-intro/content/Cider_Tour/Interactive_Coding/Tests.html
 
 ## On Java
-Some libraries might require JDK 17 as a minimum.
+Some libraries might require JDK 17 as a minimum. Assuming an Arch Linux distro as OS
 
 ### Check available JDKs ###
 Updating Arch
