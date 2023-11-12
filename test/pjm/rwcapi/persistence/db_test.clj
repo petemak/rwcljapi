@@ -1,15 +1,46 @@
 (ns pjm.rwcapi.persistence.db-test
-  (:require [clojure.test :refer :all]
+  (:require [pjm.rwcapi.core :as rwcore]
+            [clojure.test :refer :all]
             [clj-test-containers.core :as tc]
             [next.jdbc :as jdbc]
-            [clj-test-containers.core :as tc]))
+            [next.jdbc.result-set :as rs]
+            [clj-test-containers.core :as tc]
+            [com.stuartsierra.component :as component]))
 
 
-; -------------------------------------------------------
-; Test loading Postgre DB testcontainer
-; -------------------------------------------------------
-(deftest db-integration-test
-  (testing "A simple PostgreSQL integration test"
+;; -------------------------------------------------------
+;; The with-system macro allows us to start/stop systems
+;; between test executions.
+;; -------------------------------------------------------
+(defmacro with-system
+  [[bound-var binding-expr] & body]
+  `(let [~bound-var (component/start ~binding-expr)]
+     (try
+       ~@body
+       (finally
+         (component/stop ~bound-var)))))
+
+
+;; -------------------------------------------------------
+;; We want a systen containing only the database
+;; -------------------------------------------------------
+(defn datasource-only-system
+  "Create system containing only a datasurce"
+  [cfg]
+  (component/system-map
+    :data-source (rwcore/datasource-component cfg)))
+
+
+;; -------------------------------------------------------
+;; Test loading Postgres DB testcontainer and
+;; executing a SELECT command
+;;
+;; Required 
+;;  - docker service must be running:
+;;    sudo systemctl start docker.service 
+;; -------------------------------------------------------
+(deftest db-testcontainer-test
+  (testing "Loding PostgreSQL test container and running a version check must work"
     (let [pw "db-pass"
           postgres (-> (tc/create {:image-name    "postgres:15.4"
                                    :exposed-ports [5432]
@@ -20,7 +51,6 @@
                        (tc/start!))]
 
       (try
-
         (let [datasource (jdbc/get-datasource {:dbtype   "postgresql"
                                                :dbname   "postgres"
                                                :user     "postgres"
@@ -41,6 +71,39 @@
 
 
 ; -------------------------------------------------------
-; test containers
+; test migration
 ; -------------------------------------------------------
+(deftest db-migration-test
+  (testing "Migrations must create schema and seed tables for todos"
+    (let [pw "rwcapi"
+          container (-> (tc/create {:image-name    "postgres:15.4"
+                                    :exposed-ports [5432]
+                                    :env-vars      {"POSTGRES_PASSWORD" pw}})
+                        (tc/bind-filesystem! {:host-path      "/tmp"
+                                              :container-path "/opt"
+                                              :mode           :read-only})
+                        (tc/start!))]
+      (try
+       (with-system [sut (datasource-only-system {:db-spec {;;:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
+                                                             :dbtype   "postgresql"
+                                                             :dbname   "rwcapi"
+                                                             :username "rwcapi"
+                                                             :password "rwcapi"
+                                                             :host     (:host container)
+                                                             :port     (-> (:exposed-ports container)
+                                                                           first)}})]
+         (let [{:keys [data-source]} sut
+               schema-version  (jdbc/execute! (data-source)
+                                              ["select * from schema_version"]
+                                              {:builder-fn rs/as-unqualified-lower-maps})]
+              ;; NOTE: schema-version is
+              ;; a vector containng a map [{:desr...}]
+              (is (= 1 (count schema-version)))
+              (is (= {:description "add todo tables"
+                      :script      "V1__add_todo_tables.sql"
+                      :version     "1"
+                      :success     true}
+                  (select-keys (first schema-version) [:description :script :version :success])))))
 
+        (finally
+          (tc/stop! container))))))

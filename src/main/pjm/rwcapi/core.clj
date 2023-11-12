@@ -10,7 +10,7 @@
            (org.flywaydb.core Flyway)))
 
 ;; ---------------------------------------------
-;; Used as init-fn function to run migrstion
+;; Used as init-fn function to run migration
 ;; ---------------------------------------------
 (defn migrate-todo-schema
   "Load schema deifinition and run against connection"
@@ -23,6 +23,21 @@
        (locations (into-array String ["classpath:database/migrations"]))
        (table "schema_version")
        (load))))
+
+
+
+;; ---------------------------------------------
+;; Datasource component
+;; ---------------------------------------------
+(defn datasource-component
+  "Takes a configutation cotaining :db-spec and a migration function
+   and creates a    data source component using next.jdbc.connection/component.
+   Associates the migration function to :init-fn"
+  [cfg]
+  (next-jdbc-connection/component HikariDataSource
+                                  (assoc (:db-spec cfg) :init-fn migrate-todo-schema)))
+
+
 ;; ---------------------------------------------
 ;; Component system
 ;;
@@ -45,10 +60,7 @@
   [cfg]
   (component/system-map
    :sample-component (sample-comp/new-sample-component cfg)
-   :data-source (next-jdbc-connection/component
-                 HikariDataSource
-                 (assoc (:db-spec cfg) :init-fn migrate-todo-schema)
-                 )
+   :data-source (datasource-component cfg)
    :in-memory-db-component (in-mem-db-comp/new-in-memory-db-component cfg)
    :pedestal-component (component/using (pedestal-comp/new-pedestal-component cfg)
                                         [:sample-component :data-source :in-memory-db-component])))

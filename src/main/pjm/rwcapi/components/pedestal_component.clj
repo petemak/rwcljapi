@@ -149,7 +149,7 @@
 (defn save-todo!
   "Saves a TODO with specified ID"
   [{:keys [in-memory-db-component]} todo]
-  (Swap! (:state-atom in-memory-db-component) conj todo))
+  (swap! (:state-atom in-memory-db-component) conj todo))
 
 
 ;; ---------------------------------------------

@@ -54,14 +54,14 @@
   (testing "A valid free port must be found "
     (is (< 1 (get-free-port))))
   
-  (testing "sut->url should return a correct URL"
+  (testing "System under test sut->url should return a correct URL"
     (let [port (get-free-port)]
       (with-system  [sut (core/start-rwcapi-system {:webserver {:port port}
                                                     :db-spec    {:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
                                                                  :dbtype   "postgres"
                                                                  :dbname   "rwcapi"
                                                                  :username "rwcapi"
-                                                                 :pasword  "rwcapi"}})]
+                                                                 :password  "rwcapi"}})]
         (is (= (str "http://localhost:" port "/echo")
                (sut->url sut
                          (url-for :echo))))))))
