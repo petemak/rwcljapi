@@ -83,15 +83,25 @@
                                               :container-path "/opt"
                                               :mode           :read-only})
                         (tc/start!))]
+
+
+      ;; (is (=  {} container))
+      (is (= [5432] (:exposed-ports container) ))
+      (is (= 5432 (-> (:exposed-ports container)
+                   first) ))
+
+      
       (try
-       (with-system [sut (datasource-only-system {:db-spec {;;:jdbcurl  "jdbc:postgresql://localhost:5432/rwcapi"
-                                                             :dbtype   "postgresql"
-                                                             :dbname   "rwcapi"
-                                                             :username "rwcapi"
-                                                             :password "rwcapi"
-                                                             :host     (:host container)
-                                                             :port     (-> (:exposed-ports container)
-                                                                           first)}})]
+        (with-system [sut (datasource-only-system {:db-spec {:dbtype   "postgresql"
+                                                            :dbname   "rwcapi"
+                                                            :username "rwcapi"
+                                                            :password "rwcapi"
+                                                            :host     (:host container)
+                                                            :port     (-> (:exposed-ports container)
+                                                                          first)}})]
+
+
+         ;; sut is a map with fubction {:data-source #function[clojure.lang.AFunction/1]}	  
          (let [{:keys [data-source]} sut
                schema-version  (jdbc/execute! (data-source)
                                               ["select * from schema_version"]
@@ -107,3 +117,47 @@
 
         (finally
           (tc/stop! container))))))
+
+; -------------------------------------------------------
+; test insert
+; -------------------------------------------------------
+(deftest db-insert-test
+  (testing "Inserts must create todos"
+    (let [pw "rwcapi"
+          container (-> (tc/create {:image-name    "postgres:15.4"
+                                    :exposed-ports [5432]
+                                    :env-vars      {"POSTGRES_PASSWORD" pw}})
+                        (tc/bind-filesystem! {:host-path      "/tmp"
+                                              :container-path "/opt"
+                                              :mode           :read-only})
+                        (tc/start!))]
+
+
+      (try
+        (with-system [sut (datasource-only-system {:db-spec {:dbtype   "postgresql"
+                                                            :dbname   "rwcapi"
+                                                            :username "rwcapi"
+                                                            :password "rwcapi"
+                                                            :host     (:host container)
+                                                            :port     (-> (:exposed-ports container)
+                                                                          first)}})]
+
+
+          ;; sut is a map with fubction {:data-source #function[clojure.lang.AFunction/1]}	  
+          (let [{:keys [data-source]} sut
+                insert-results (jdbc/execute! (data-source)
+                                              ["INSERT INTO todo (title, description)
+                                                VALUES ('Work', 'bbabba'), ('Learn', 'jjjjj') returning *"]
+                                             {:builder-fn rs/as-unqualified-lower-maps})
+                select-results (jdbc/execute! (data-source)
+                                             ["select * from todo"]
+                                             {:builder-fn rs/as-unqualified-lower-maps})]
+
+            (is (= 2 (count insert-results)
+                     (count select-results)))))
+
+        (finally
+          (tc/stop! container))))))
+
+
+
